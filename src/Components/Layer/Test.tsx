@@ -54,7 +54,7 @@ interface CustomGeoJSON {
 const Test: React.FC = () => {
     const [adminMode, setAdminMode] = useState(true);
     const editableFG = useRef<any>(null);
-    const [state, setState] = useState<State>(initialState);
+    const [image, setImage] = useState<State>(initialState);
 
     const onClickAdminButton = () => {
         setAdminMode(!adminMode);
@@ -188,20 +188,6 @@ const Test: React.FC = () => {
         // You can add custom logic when deletion stops here
     };
 
-    const onFeatureGroupReady = (reactFGref: any) => {
-        let leafletGeoJSON = new L.GeoJSON(getGeoJson());
-
-        let leafletFG = reactFGref.leafletElement;
-
-        leafletGeoJSON.eachLayer((layer: any) => {
-            console.log(layer);
-            leafletFG.addLayer(layer);
-        });
-
-        editableFG.current = reactFGref;
-    };
-
-    
     const onChange = () => {
         if (!editableFG.current || !editableFG.current.leafletElement) {
             console.error("Editable feature group is not available.");
@@ -231,7 +217,7 @@ const Test: React.FC = () => {
         if (file) {
           const imageUrl = URL.createObjectURL(file); // Create a URL for the selected image
           // Set the imageUrl as the source for the ImageOverlay
-          setState({ ...state, imageUrl });
+          setImage({ ...image, imageUrl });
         }
       };
     
@@ -246,7 +232,7 @@ const Test: React.FC = () => {
             <MapContainer center={[13, 100]}
                 zoom={6}
                 style={{ width: '100%', height: '100vh' }}>
-                <ImageOverlay bounds={bounds} url={state.imageUrl || test33} />
+                <ImageOverlay bounds={bounds} url={image.imageUrl || test33} />
 
                 <FeatureGroup
                     ref={reactFGref => {
@@ -275,58 +261,6 @@ const Test: React.FC = () => {
             </MapContainer>
         </div>
     );
-};
-
-const getGeoJson = (): CustomGeoJSON => {
-    return {
-        type: "FeatureCollection",
-        features: [
-            {
-                type: "Feature",
-                properties: {},
-                geometry: {
-                    type: "LineString",
-                    coordinates: [
-                        [82.69, 205.25],
-                        [212.88, 54.8],
-                    ],
-                },
-            },
-            {
-                type: "Feature",
-                properties: {},
-                geometry: {
-                    type: "Point",
-                    coordinates: [82.69, 205.25],
-                },
-            },
-
-            {
-                type: "Feature",
-                properties: {},
-                geometry: {
-                    type: "Point",
-                    coordinates: [212.88, 54.8],
-                },
-            },
-            {
-                type: "Feature",
-                properties: {},
-                geometry: {
-                    type: "Polygon",
-                    coordinates: [
-                        [
-                            [130.68, 167.36],
-                            [142.64, 168.07],
-                            [141.16, 180.65],
-                            [135.76, 187.37],
-                            [131.07, 176.74],
-                        ],
-                    ],
-                },
-            },
-        ],
-    };
 };
 
 export default Test;
