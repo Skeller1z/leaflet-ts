@@ -224,8 +224,8 @@ const Test: React.FC = () => {
 
     return (
         <div>
-            <button onClick={onClickAdminButton}>admin mode</button>
-            <button onClick={onChange}>Download GeoJSON</button>
+            <button onClick={onClickAdminButton}>Edit mode</button>
+            <button onClick={onChange}>Download</button>
             <input type="file" accept="image/*" onChange={handleImageChange} />
 
             <MapContainer center={[13, 100]}
