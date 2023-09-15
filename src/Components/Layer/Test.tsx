@@ -23,7 +23,6 @@ type State = {
   };
 
   
-// Work around broken icons when using webpack, see https://github.com/PaulLeCam/react-leaflet/issues/255
 (delete (L.Icon.Default.prototype as any)._getIconUrl);
 L.Icon.Default.mergeOptions({
     iconRetinaUrl:
@@ -35,21 +34,21 @@ L.Icon.Default.mergeOptions({
 });
 
 const bounds: LatLngBoundsLiteral = [
-    [0, 0],
-    [4000, 300],
+    [0, 0],// มุมบนซ้าย
+    [4000, 300],  // มุมล่างขวา
 ];
 
-interface CustomGeoJSON {
-    type: "FeatureCollection";
-    features: Array<{
-        type: "Feature";
-        properties: Record<string, any>;
-        geometry: {
-            type: string;
-            coordinates: number[] | number[][] | number[][][];
-        };
-    }>;
-}
+// interface CustomGeoJSON {
+//     type: "FeatureCollection";
+//     features: Array<{
+//         type: "Feature";
+//         properties: Record<string, any>;
+//         geometry: {
+//             type: string;
+//             coordinates: number[] | number[][] | number[][][];
+//         };
+//     }>;
+// }
 
 const Test: React.FC = () => {
     const [adminMode, setAdminMode] = useState(true);
@@ -164,27 +163,27 @@ const Test: React.FC = () => {
     };
 
     const onMounted = (drawControl: any) => {
-        console.log("_onMounted", drawControl);
+        console.log("onMounted", drawControl);
         // You can add custom logic when the draw control is mounted here
     };
 
     const onEditStart = (e: any) => {
-        console.log("_onEditStart", e);
+        console.log("onEditStart", e);
         // You can add custom logic when editing starts here
     };
 
     const onEditStop = (e: any) => {
-        console.log("_onEditStop", e);
+        console.log("onEditStop", e);
         // You can add custom logic when editing stops here
     };
 
     const onDeleteStart = (e: any) => {
-        console.log("_onDeleteStart", e);
+        console.log("onDeleteStart", e);
         // You can add custom logic when deletion starts here
     };
 
     const onDeleteStop = (e: any) => {
-        console.log("_onDeleteStop", e);
+        console.log("onDeleteStop", e);
         // You can add custom logic when deletion stops here
     };
 
