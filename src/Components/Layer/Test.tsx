@@ -15,14 +15,14 @@ import test33 from '../test33.jpg'
 type State = {
     adminMode: boolean;
     imageUrl: string | null;
-  };
-  
-  const initialState: State = {
+};
+
+const initialState: State = {
     adminMode: true,
     imageUrl: null,
-  };
+};
 
-  
+
 (delete (L.Icon.Default.prototype as any)._getIconUrl);
 L.Icon.Default.mergeOptions({
     iconRetinaUrl:
@@ -111,6 +111,8 @@ const Test: React.FC = () => {
         } else if (type === 'polyline' || type === 'polygon') {
             // Handle polyline or polygon creation
             const geoJSON = layer.toGeoJSON();
+            const coordinates = geoJSON.geometry.coordinates;
+            console.log('Coordinates:', coordinates);
             if (geoJSON) {
                 createdLayerData = {
                     type: type,
@@ -192,35 +194,35 @@ const Test: React.FC = () => {
             console.error("Editable feature group is not available.");
             return;
         }
-    
+
         const geojsonData = editableFG.current.leafletElement.toGeoJSON();
-    
+
         // Convert the GeoJSON object to a JSON string
         const geojsonString = JSON.stringify(geojsonData, null, 2);
-    
+
         // Create a Blob (Binary Large Object) from the JSON string
         const blob = new Blob([geojsonString], { type: "application/json" });
-    
+
         // Create a download link
         const downloadLink = document.createElement("a");
         downloadLink.href = window.URL.createObjectURL(blob);
         downloadLink.download = "map_data.geojson"; // Specify the filename
-    
+
         // Trigger a click event on the download link to start the download
         downloadLink.click();
     };
 
     const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]; // Get the selected file
-    
+
         if (file) {
-          const imageUrl = URL.createObjectURL(file); // Create a URL for the selected image
-          // Set the imageUrl as the source for the ImageOverlay
-          setImage({ ...image, imageUrl });
+            const imageUrl = URL.createObjectURL(file); // Create a URL for the selected image
+            // Set the imageUrl as the source for the ImageOverlay
+            setImage({ ...image, imageUrl });
         }
-      };
-    
-    
+    };
+
+
 
     return (
         <div>
@@ -229,7 +231,7 @@ const Test: React.FC = () => {
             <input type="file" accept="image/*" onChange={handleImageChange} />
 
             <MapContainer center={[13, 100]}
-                zoom={6}
+                zoom={1}
                 style={{ width: '100%', height: '100vh' }}>
                 <ImageOverlay bounds={bounds} url={image.imageUrl || test33} />
 
