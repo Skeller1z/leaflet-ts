@@ -15,11 +15,13 @@ import test33 from '../test33.jpg'
 type State = {
     adminMode: boolean;
     imageUrl: string | null;
+    polygonName: string;
 };
 
 const initialState: State = {
     adminMode: true,
     imageUrl: null,
+    polygonName: "",
 };
 
 
@@ -54,6 +56,7 @@ const Test: React.FC = () => {
     const [adminMode, setAdminMode] = useState(true);
     const editableFG = useRef<any>(null);
     const [image, setImage] = useState<State>(initialState);
+    const [polygonName, setPolygonName] = useState<string>("");
 
     const onClickAdminButton = () => {
         setAdminMode(!adminMode);
@@ -95,44 +98,82 @@ const Test: React.FC = () => {
         console.log(`_onEdited: edited ${numEdited} layers`, e);
     };
 
-    const onCreated = (e: any) => {
-        let type = e.layerType;
-        let layer = e.layer;
-        let createdLayerData;
 
+    const onCreated = (e: any) => {
+        const type = e.layerType;
+        const layer = e.layer;
+    
         if (type === 'marker') {
             // Handle marker creation
-            const latlng = layer.getLatLng();
-            createdLayerData = {
-                type: 'marker',
-                latlng,
-                // Add more properties or data as needed
-            };
+            // ...
         } else if (type === 'polyline' || type === 'polygon') {
             // Handle polyline or polygon creation
-            const geoJSON = layer.toGeoJSON();
-            const coordinates = geoJSON.geometry.coordinates;
-            console.log('Coordinates:', coordinates);
-            if (geoJSON) {
-                createdLayerData = {
-                    type: type,
-                    geoJSON,
-                    // Add more properties or data as needed
-                };
-            }
+    
+            // Use a window.prompt to get the name from the user
+            const name = window.prompt('Enter Polygon Name');
+            
+            // Create a file input element for image upload
+            const imageInput = document.createElement('input');
+            imageInput.type = 'file';
+    
+            // Declare the details variable before using it
+            let details = '';
+    
+            imageInput.addEventListener('change', (event) => {
+                const fileInput = event.target as HTMLInputElement; // Cast event.target to HTMLInputElement
+                const file = fileInput.files?.[0]; // Access the files property
+                
+                if (file) {
+                    const imageUrl = URL.createObjectURL(file); // Get the URL of the uploaded image
+    
+                    // Prompt for additional details
+                    details = window.prompt('Enter Details') || ''; 
+    
+                    // Create the content for the popup, including the image and details
+                    const content = `
+                        <h3>${name}</h3>
+                        <img src="${imageUrl}" alt="${name}" width="100" />
+                        <p>${details}</p>
+                    `;
+    
+                    // Set the content as the HTML of the popup
+                    layer.bindPopup(content).openPopup();
+    
+                    // Create a data object with the type, geoJSON, name, image URL, and details
+                    const geoJSON = layer.toGeoJSON();
+                    const coordinates = geoJSON.geometry.coordinates;
+                    const createdLayerData = {
+                        type: type,
+                        geoJSON,
+                        name: name,
+                        imageUrl: imageUrl,
+                        details: details,
+                    };
+    
+                    layer.on('click', function () {
+                        // Your onClick logic here
+                        console.log('Polygon clicked:', createdLayerData.name);
+                        console.log('coordinates:', coordinates);
+                    });
+    
+                    // Call the save function with the created layer's data
+                    saveToDatabase([createdLayerData]);
+                }
+            });
+    
+            imageInput.click(); // Trigger the file input click event
+            
         } else {
             // Handle other types of shapes
-            console.log('Something else created:', type, e);
+            // ...
         }
-
-        if (createdLayerData) {
-            // Call the save function with the created layer's data
-            saveToDatabase([createdLayerData]);
-        }
-
-        // Do whatever else you need to. (save to db; etc)
+    
+        // After creating the polygon, stop drawing mode
     };
-
+    
+    
+    
+    
     const onDeleted = (e: any) => {
         let numDeleted = 0;
         e.layers.eachLayer((layer: any) => {
@@ -222,45 +263,83 @@ const Test: React.FC = () => {
         }
     };
 
+    const handlePolygonNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setPolygonName(e.target.value); // Update the polygon name state
+    };
 
+    const handleConfirmName = () => {
+        // You can save the polygonName or perform any other action here
+        console.log('Polygon name confirmed:', polygonName);
+    };
 
     return (
-        <div>
-            <button onClick={onClickAdminButton}>Edit mode</button>
-            <button onClick={onChange}>Download</button>
-            <input type="file" accept="image/*" onChange={handleImageChange} />
-
-            <MapContainer center={[13, 100]}
-                zoom={1}
-                style={{ width: '100%', height: '100vh' }}>
-                <ImageOverlay bounds={bounds} url={image.imageUrl || test33} />
-
-                <FeatureGroup
-                    ref={reactFGref => {
-                        if (reactFGref) {
-                            editableFG.current = reactFGref;
-                        }
-                    }}
+        <div className="flex border">
+            <div className="flex flex-col items-center justify-center p-4">
+                <button
+                    onClick={onClickAdminButton}
+                    className={`${adminMode ? 'bg-green-500' : 'bg-red-500'
+                        } px-4 py-2 rounded-md mb-4`}
                 >
-                    {adminMode ? (
-                        <EditControl
-                            position="topright"
-                            onEdited={onEdited}
-                            onCreated={onCreated}
-                            onDeleted={onDeleted}
-                            onMounted={onMounted}
-                            onEditStart={onEditStart}
-                            onEditStop={onEditStop}
-                            onDeleteStart={onDeleteStart}
-                            onDeleteStop={onDeleteStop}
-                            draw={{
-                                rectangle: false,
-                            }}
-                        />
-                    ) : null}
-                </FeatureGroup>
-            </MapContainer>
+                    {adminMode ? 'Admin Mode' : 'Edit Mode'}
+                </button>
+                {/* <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="mb-4"
+                /> */}
+                {/* <input
+                    type="text"
+                    placeholder="Enter Polygon Name"
+                    value={polygonName}
+                    onChange={handlePolygonNameChange} // Check this line
+                    className="p-2 border rounded-md"
+                />
+                <button
+                    onClick={handleConfirmName}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2"
+                >
+                    Confirm
+                </button> */}
+            </div>
+            <div className="flex-grow">
+                <MapContainer
+                    center={[65, 150]}
+                    zoom={4}
+                    className="w-full h-screen"
+                >
+                    <ImageOverlay
+                        bounds={bounds}
+                        url="https://bsv-th-authorities.com/impage_pro/รายคณะ.jpg"
+                    />
+                    <FeatureGroup
+                        ref={reactFGref => {
+                            if (reactFGref) {
+                                editableFG.current = reactFGref;
+                            }
+                        }}
+                    >
+                        {adminMode ? (
+                            <EditControl
+                                position="topright"
+                                onEdited={onEdited}
+                                onCreated={onCreated}
+                                onDeleted={onDeleted}
+                                onMounted={onMounted}
+                                onEditStart={onEditStart}
+                                onEditStop={onEditStop}
+                                onDeleteStart={onDeleteStart}
+                                onDeleteStop={onDeleteStop}
+                                draw={{
+                                    rectangle: false,
+                                }}
+                            />
+                        ) : null}
+                    </FeatureGroup>
+                </MapContainer>
+            </div>
         </div>
+
     );
 };
 
